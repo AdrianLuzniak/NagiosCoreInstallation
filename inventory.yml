@@ -1,0 +1,21 @@
+all:
+    children:
+        webservers:
+            hosts:
+                AnsibleTarget1:
+                    ansible_host: 192.168.100.125
+                    ansible_ssh_user: osboxes
+                    ansible_ssh_pass: osboxes.org
+                    ansible_become: yes
+                    ansible_become_method: sudo
+                    ansible_become_user: root
+                    ansible_become_pass: osboxes.org
+
+                AnsibleTarget2:
+                    ansible_host: 192.168.100.126
+                    ansible_ssh_user: osboxes
+                    ansible_ssh_pass: osboxes.org
+                    ansible_become: yes
+                    ansible_become_method: sudo
+                    ansible_become_user: root
+                    ansible_become_pass: osboxes.org
