@@ -6,5 +6,6 @@
     state: enabled
   loop: "{{ ports }}"
 
+
 - name: Reload firewall
   command: firewall-cmd --reload

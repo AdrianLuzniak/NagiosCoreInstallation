@@ -1,14 +1,15 @@
----
 - name: Restart Nagios
   systemd:
     name: nagios
     state: restarted
+
 
 - name: Ensure Nagios service is running
   command: systemctl status nagios
   register: nagios_status
   failed_when: nagios_status.rc != 0
   changed_when: false
+
 
 - name: Display nagios service status
   debug:

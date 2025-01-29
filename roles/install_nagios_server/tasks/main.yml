@@ -1,14 +1,15 @@
----
 - name: Create Nagios user with home directory and shell
   user:
     name: nagios
     create_home: yes
     shell: /bin/bash
 
+
 - name: Create Nagcmd group for external commands
   group:
     name: nagcmd
     state: present
+
 
 - name: Add nagios user to nagcmd group
   user:
@@ -16,22 +17,26 @@
     groups: nagcmd
     append: yes
 
+
 - name: Add apache user to nagcmd group
   user:
     name: apache
     groups: nagcmd
     append: yes
 
+
 - name: Download Nagios Core Source
   get_url:
     url: https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.12.tar.gz
     dest: /tmp/nagios.tar.gz
+
 
 - name: Extract Nagios Core source
   unarchive:
     src: /tmp/nagios.tar.gz
     dest: /tmp/
     remote_src: yes
+
 
 - name: Compile and install Nagios Core
   shell: |
@@ -46,20 +51,24 @@
   args:
     executable: /bin/bash
 
+
 - name: Configure Nagios admin account
   shell: htpasswd -bc /usr/local/nagios/etc/htpasswd.users nagiosadmin password
   args:
     executable: /bin/bash
   no_log: true
 
+
 - name: Configure SELinux to allow Apache
   command: setsebool -P httpd_can_network_connect 1
+
 
 - name: Enable and start Apache
   systemd:
     name: httpd
     state: started
     enabled: true
+
 
 - name: Enable and start Nagios
   systemd:

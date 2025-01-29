@@ -1,4 +1,3 @@
----
 - name: Install required dependencies for Nagios Plugins
   dnf:
     name:
