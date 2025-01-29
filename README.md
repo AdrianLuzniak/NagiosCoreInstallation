@@ -22,3 +22,9 @@ semodule -X 300 -i my-cmdcgi.pp
 For status.cgi:
 ausearch -c 'status.cgi' --raw | audit2allow -M my-statuscgi
 semodule -X 300 -i my-statuscgi.pp
+
+system_setup – SELinux setup, EPEL installation and system updates
+install_nagios_dependencies – Nagios dependency installation
+install_nagios_server – Nagios installation and configuration
+install_nagios_plugins_dependencies – Nagios plugin dependency installation
+install_nagios_plugins – Nagios plugin installation and configuration

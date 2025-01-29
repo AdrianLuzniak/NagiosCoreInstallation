@@ -1,0 +1,41 @@
+---
+- name: Ensure nagios-plugins directory is removed
+  file:
+    path: /tmp/nagios-plugins
+    state: absent
+
+- name: Download Nagios plugins
+  shell: |
+      cd /tmp
+      git clone https://github.com/nagios-plugins/nagios-plugins.git
+
+- name: Ensure /tmp/nagios-plugins has correct permissions
+  file:
+    path: /tmp/nagios-plugins
+    mode: "2755"
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
+
+- name: Install Nagios plugins
+  shell: |
+    cd /tmp/nagios-plugins
+    ./tools/setup
+    ./configure --prefix=/usr/local/nagios
+    make
+    make install
+
+- name: Ensure Nagios directories have correct ownership and permissions
+  file:
+    path: "{{ item }}"
+    owner: nagios
+    group: nagcmd
+    mode: "2755"
+    recurse: yes
+  with_items:
+    - /usr/local/nagios
+    - /usr/local/nagios/var
+    - /usr/local/nagios/var/rw
+    - /usr/local/nagios/etc
+  tags: permissions
