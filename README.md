@@ -28,3 +28,27 @@ install_nagios_dependencies – Nagios dependency installation
 install_nagios_server – Nagios installation and configuration
 install_nagios_plugins_dependencies – Nagios plugin dependency installation
 install_nagios_plugins – Nagios plugin installation and configuration
+
+Szukanie desc monitora w nagios:
+grep -r "check_command.*check_http" /usr/local/nagios/etc/
+grep -A 10 "define service" /usr/local/nagios/etc/objects/localhost.cfg
+
+
+- name: Debug selinux_enabled rc
+  debug:
+    msg: "SELinux status: {{ ansible_facts.selinux.status }}, Selinux mode: {{ ansible_facts.selinux.mode }}"
+
+
+To check, why: 
+
+TASK [add_nagios_to_selinux_exception : Allow Nagios cmd.cgi access through SELinux if SELinux is enabled and errors are found] *******************************************************************************
+skipping: [AnsibleTarget1]
+
+TASK [add_nagios_to_selinux_exception : Allow Nagios status.cgi access through SELinux if SELinux is enabled and errors are found] ****************************************************************************
+skipping: [AnsibleTarget1]
+
+TASK [add_nagios_to_selinux_exception : Reload systemd daemon if SELinux is enabled and errors are found] *****************************************************************************************************
+skipping: [AnsibleTarget1]
+
+TASK [add_nagios_to_selinux_exception : Restart Nagios service if SELinux is enabled and errors are found] ****************************************************************************************************
+skipping: [AnsibleTarget1]

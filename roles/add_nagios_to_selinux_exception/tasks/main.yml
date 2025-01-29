@@ -1,0 +1,96 @@
+- name: Ensure SELinux is enabled
+  command: setenforce 1
+  when: ansible_facts.selinux.status == 'enabled' and ansible_facts.selinux.mode != 'enforcing'
+  register: selinux_enabled
+  changed_when: selinux_enabled.rc == 0 # Only marks the change if the command was successful
+
+- name: Debug selinux_enabled rc
+  debug:
+    msg: "SELinux status: {{ ansible_facts.selinux.status }}, Selinux mode: {{ ansible_facts.selinux.mode }}"
+
+- name: Restart Nagios service
+  systemd:
+    name: nagios
+    state: restarted
+  when: selinux_enabled.changed
+
+
+- name: Check if check_http plugin is installed
+  stat:
+    path: "/usr/local/nagios/libexec/check_http"
+  register: check_http_plugin_installed
+
+
+- name: Check permissions for nagios.cmd
+  stat:
+    path: "/usr/local/nagios/var/rw/nagios.cmd"
+  register: nagios_cmd_file
+
+- name: Debug nagios.cmd file permissions
+  debug:
+    msg: "Permissions: {{ nagios_cmd_file.stat.mode }}, Owner: {{ nagios_cmd_file.stat.pw_name }}, Group: {{ nagios_cmd_file.stat.gr_name }}"
+  when: nagios_cmd_file.stat.exists
+
+
+- name: Ensure nagios.cmd is writable by nagios user
+  file:
+    path: "/usr/local/nagios/var/rw/nagios.cmd"
+    owner: nagios
+    group: nagcmd
+    mode: "0660"
+  when: nagios_cmd_file.stat.exists and (nagios_cmd_file.stat.pw_name != "nagios" or nagios_cmd_file.stat.gr_name != "nagcmd" or nagios_cmd_file.stat.mode != "0660")
+
+
+- name: Trigger check_http monitor in Nagios
+  command: >
+    sudo -u nagios /bin/sh -c 
+    "echo '[{{ ansible_date_time.epoch }}] PROCESS_SERVICE_CHECK_RESULT;
+    {{ inventory_hostname }};
+    HTTP;
+    0;
+    OK - Manual check triggered' > /usr/local/nagios/var/rw/nagios.cmd"
+  when: check_http_plugin_installed.stat.exists and nagios_cmd_file.stat.exists
+
+
+- name: Check for cmd.cgi and status.cgi related errors in audit.log
+  command: sealert -a /var/log/audit/audit.log
+  register: sealert_output
+  changed_when: false
+  failed_when: false
+
+
+- name: Debug sealert output for errors
+  debug:
+    msg: "{{ sealert_output.stdout }}"
+  when: sealert_output.stdout != ""
+
+
+- name: Check if errors for cmd.cgi or status.cgi are present in sealert output
+  set_fact:
+    selinux_errors_found: "{{ 'cmd.cgi' in sealert_output.stdout or 'status.cgi' in sealert_output.stdout }}"
+
+
+- name: Allow Nagios cmd.cgi access through SELinux if SELinux is enabled and errors are found
+  shell: |
+    ausearch -c 'cmd.cgi' --raw | audit2allow -M my-cmdcgi
+    semodule -X 300 -i my-cmdcgi.pp
+  when: selinux_errors_found and ansible_facts.selinux.status == 'Enforcing'
+
+
+- name: Allow Nagios status.cgi access through SELinux if SELinux is enabled and errors are found
+  shell: |
+    ausearch -c 'status.cgi' --raw | audit2allow -M my-statuscgi
+    semodule -X 300 -i my-statuscgi.pp
+  when: selinux_errors_found and ansible_facts.selinux.status == 'Enforcing'
+
+
+- name: Reload systemd daemon if SELinux is enabled and errors are found
+  command: systemctl daemon-reload
+  when: selinux_errors_found and ansible_facts.selinux.status == 'Enforcing'
+
+
+- name: Restart Nagios service if SELinux is enabled and errors are found
+  systemd:
+    name: nagios
+    state: restarted
+  when: selinux_errors_found and ansible_facts.selinux.status == 'Enforcing'
