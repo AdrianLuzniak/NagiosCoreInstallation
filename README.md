@@ -41,14 +41,29 @@ grep -A 10 "define service" /usr/local/nagios/etc/objects/localhost.cfg
 
 To check, why: 
 
-TASK [add_nagios_to_selinux_exception : Allow Nagios cmd.cgi access through SELinux if SELinux is enabled and errors are found] *******************************************************************************
-skipping: [AnsibleTarget1]
+- name: Trigger check_http monitor in Nagios
+  command: >
+    sudo -u nagios /bin/sh -c 
+    "echo '[{{ ansible_date_time.epoch }}] PROCESS_SERVICE_CHECK_RESULT;
+    {{ inventory_hostname }};
+    HTTP;
+    0;
+    OK - Manual check triggered' > /usr/local/nagios/var/rw/nagios.cmd"
+  when: check_http_plugin_installed.stat.exists and nagios_cmd_file.stat.exists
 
-TASK [add_nagios_to_selinux_exception : Allow Nagios status.cgi access through SELinux if SELinux is enabled and errors are found] ****************************************************************************
-skipping: [AnsibleTarget1]
+or
+sudo -u nagios sh -c "echo '[$(date +%s)] PROCESS_SERVICE_CHECK_RESULT;AnsibleTarget1;HTTP;0;OK - Manual check triggered' > /usr/local/nagios/var/rw/nagios.cmd"
+not trigger errors in audit.log
 
-TASK [add_nagios_to_selinux_exception : Reload systemd daemon if SELinux is enabled and errors are found] *****************************************************************************************************
-skipping: [AnsibleTarget1]
+Wysyłanie żądania:
+echo "[`date +%s`] PROCESS_SERVICE_CHECK_RESULT;localhost;HTTP;0;OK - Manual check triggered" > /usr/local/nagios/var/rw/nagios.cmd
 
-TASK [add_nagios_to_selinux_exception : Restart Nagios service if SELinux is enabled and errors are found] ****************************************************************************************************
-skipping: [AnsibleTarget1]
+Spradzanie logów nagios 
+tail -f /usr/local/nagios/var/nagios.log
+
+grep "host_name" /usr/local/nagios/etc/objects/*.cfg
+cat /usr/local/nagios/etc/objects/localhost.cfg
+
+Szukanie desc monitora w nagios:
+grep -r "check_command.*check_http" /usr/local/nagios/etc/
+grep -A 10 "define service" /usr/local/nagios/etc/objects/localhost.cfg

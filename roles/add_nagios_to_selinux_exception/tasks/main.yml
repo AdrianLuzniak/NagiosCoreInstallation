@@ -1,3 +1,7 @@
+- name: Debug selinux
+  debug:
+    msg: "SELinux status: {{ ansible_facts.selinux.status }}, Selinux mode: {{ ansible_facts.selinux.mode }}"
+
 - name: Ensure SELinux is enabled
   command: setenforce 1
   when: ansible_facts.selinux.status == 'enabled' and ansible_facts.selinux.mode != 'enforcing'
@@ -44,11 +48,9 @@
 - name: Trigger check_http monitor in Nagios
   command: >
     sudo -u nagios /bin/sh -c 
-    "echo '[{{ ansible_date_time.epoch }}] PROCESS_SERVICE_CHECK_RESULT;
-    {{ inventory_hostname }};
-    HTTP;
-    0;
-    OK - Manual check triggered' > /usr/local/nagios/var/rw/nagios.cmd"
+    "echo '[{{ ansible_date_time.epoch }}] PROCESS_SERVICE_CHECK_RESULT;localhost;HTTP;0;OK - Manual check triggered' > /usr/local/nagios/var/rw/nagios.cmd"
+  environment:
+    HOME: "/var/lib/nagios"
   when: check_http_plugin_installed.stat.exists and nagios_cmd_file.stat.exists
 
 
@@ -69,28 +71,32 @@
   set_fact:
     selinux_errors_found: "{{ 'cmd.cgi' in sealert_output.stdout or 'status.cgi' in sealert_output.stdout }}"
 
+- name: Debug selinux errors found
+  debug:
+    msg: "SELinux errors found : {{ selinux_errors_found }}, selinux status: {{ ansible_facts.selinux.mode }}"
+
 
 - name: Allow Nagios cmd.cgi access through SELinux if SELinux is enabled and errors are found
   shell: |
     ausearch -c 'cmd.cgi' --raw | audit2allow -M my-cmdcgi
     semodule -X 300 -i my-cmdcgi.pp
-  when: selinux_errors_found and ansible_facts.selinux.status == 'Enforcing'
+  when: selinux_errors_found and ansible_facts.selinux.mode == 'enforcing'
 
 
 - name: Allow Nagios status.cgi access through SELinux if SELinux is enabled and errors are found
   shell: |
     ausearch -c 'status.cgi' --raw | audit2allow -M my-statuscgi
     semodule -X 300 -i my-statuscgi.pp
-  when: selinux_errors_found and ansible_facts.selinux.status == 'Enforcing'
-
+  when: selinux_errors_found and ansible_facts.selinux.mode == 'enforcing'
+  ignore_errors: true
 
 - name: Reload systemd daemon if SELinux is enabled and errors are found
   command: systemctl daemon-reload
-  when: selinux_errors_found and ansible_facts.selinux.status == 'Enforcing'
+  when: selinux_errors_found and ansible_facts.selinux.mode == 'enforcing'
 
 
 - name: Restart Nagios service if SELinux is enabled and errors are found
   systemd:
     name: nagios
     state: restarted
-  when: selinux_errors_found and ansible_facts.selinux.status == 'Enforcing'
+  when: selinux_errors_found and ansible_facts.selinux.mode == 'enforcing'
