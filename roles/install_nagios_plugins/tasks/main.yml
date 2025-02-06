@@ -1,0 +1,67 @@
+- name: Check if basic Nagios plugins are installed
+  stat:
+    path: "usr/local/nagios/libexec"
+  register: nagios_plugins_dir
+
+
+- name: Check if check_http plugin is installed
+  stat:
+    path: "/usr/local/nagios/libexec/check_http"
+  register: check_http_plugin
+
+
+- name: Skip installation if plugins exists
+  when: check_http_plugin.stat.exists
+  debug:
+    msg: "Nagios plugins are already installed, skipping installation"
+
+
+- name: Ensure nagios-plugins directory is removed if not installed
+  file:
+    path: /tmp/nagios-plugins
+    state: absent
+  when: (not check_http_plugin.stat.exists) or force_install_plugins
+
+
+- name: Download Nagios plugins
+  shell: |
+      cd /tmp
+      git clone https://github.com/nagios-plugins/nagios-plugins.git
+  when: (not check_http_plugin.stat.exists) or force_install_plugins
+
+
+- name: Ensure /tmp/nagios-plugins has correct permissions
+  file:
+    path: /tmp/nagios-plugins
+    mode: "2755"
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
+  when: (not check_http_plugin.stat.exists) or force_install_plugins
+
+
+- name: Install Nagios plugins
+  shell: |
+    cd /tmp/nagios-plugins
+    ./tools/setup
+    ./configure --prefix=/usr/local/nagios
+    make
+    make install
+  when: (not check_http_plugin.stat.exists) or force_install_plugins
+
+
+- name: Ensure Nagios directories have correct ownership and permissions
+  file:
+    path: "{{ item }}"
+    owner: nagios
+    group: nagcmd
+    mode: "2755"
+    recurse: yes
+  with_items:
+    - /usr/local/nagios
+    - /usr/local/nagios/var
+    - /usr/local/nagios/var/rw
+    - /usr/local/nagios/etc
+  tags: permissions
+  when: (not check_http_plugin.stat.exists) or force_install_plugins

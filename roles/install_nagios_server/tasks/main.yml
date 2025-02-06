@@ -1,0 +1,100 @@
+- name: Check if Nagios Core Server is installed
+  stat:
+    path: "/usr/local/nagios/bin/nagios"
+  register: nagios_server_installed
+
+
+- name: Skip installation if Nagios Server is already installed and force_install_nagios is false
+  when: nagios_server_installed and not force_install_nagios
+  debug:
+    msg: "Nagios Server is already installed, skipping installation"
+
+
+- name: Create Nagios user with home directory and shell
+  user:
+    name: nagios
+    create_home: yes
+    shell: /bin/bash
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Create Nagcmd group for external commands
+  group:
+    name: nagcmd
+    state: present
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Add nagios user to nagcmd group
+  user:
+    name: nagios
+    groups: nagcmd
+    append: yes
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Add apache user to nagcmd group
+  user:
+    name: apache
+    groups: nagcmd
+    append: yes
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Download Nagios Core Source
+  get_url:
+    url: https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.12.tar.gz
+    dest: /tmp/nagios.tar.gz
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Extract Nagios Core source
+  unarchive:
+    src: /tmp/nagios.tar.gz
+    dest: /tmp/
+    remote_src: yes
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Compile and install Nagios Core
+  shell: |
+    cd /tmp/nagios-4.4.12
+    ./configure --with-command-group=nagcmd
+    make all
+    make install
+    make install-init
+    make install-config
+    make install-commandmode
+    make install-webconf
+  args:
+    executable: /bin/bash
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Configure Nagios admin account
+  shell: htpasswd -bc /usr/local/nagios/etc/htpasswd.users nagiosadmin password
+  args:
+    executable: /bin/bash
+  no_log: true
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Configure SELinux to allow Apache
+  command: setsebool -P httpd_can_network_connect 1
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Enable and start Apache
+  systemd:
+    name: httpd
+    state: started
+    enabled: true
+  when: not nagios_server_installed.stat.exists or force_install_nagios
+
+
+- name: Enable and start Nagios
+  systemd:
+    name: nagios
+    state: started
+    enabled: true
+  when: nagios_server_installed.stat.exists or force_install_nagios

@@ -1,14 +1,22 @@
 ---
-- name: Update system and install required dependencies for Nagios Core
+- name: Temporary disable SELinux, update system and install required dependencies for Nagios Core
   hosts: AnsibleTarget1
   become: true
   tasks:
+    - name: Set SELinux to permissive mode temporarily
+      command: setenforce 0
+      ignore_errors: true
+
+    - name: Install EPEL repository on Centos9
+      dnf:
+        name: epel-release
+        state: present
+        
     - name: Update and upgrade system packages
       dnf:
         name: "*"
         state: latest
       tags: update
-
     - name: Install required dependencies for Nagios Core
       dnf:
         name:

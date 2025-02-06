@@ -1,0 +1,8 @@
+- name: Install required dependencies for Nagios Plugins
+  dnf:
+    name:
+      - autoconf
+      - automake
+      - libtool
+      - pkg-config
+    state: present

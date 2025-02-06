@@ -1,0 +1,18 @@
+- name: Restart Nagios and make sure it's enabled
+  systemd:
+    name: nagios
+    state: restarted
+    enabled: true
+
+
+- name: Ensure Nagios service is running
+  command: systemctl status nagios
+  register: nagios_status
+  failed_when: nagios_status.rc != 0
+  changed_when: false
+
+
+- name: Display nagios service status
+  debug:
+    msg: "{{ nagios_status.stdout }}"
+

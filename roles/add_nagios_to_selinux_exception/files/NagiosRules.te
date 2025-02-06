@@ -1,0 +1,29 @@
+module NagiosRules 1.0;
+
+require {
+    type usr_t;
+    type httpd_sys_script_t;
+    type httpd_t;
+    type nagios_t;
+    type var_log_t;
+    class fifo_file { getattr open write };
+    class file { read write execute };
+    class dir { read execute };
+}
+
+#============= httpd_sys_script_t ==============
+
+# Allow access to fifo_file for httpd_sys_script_t
+allow httpd_sys_script_t usr_t:fifo_file { getattr open write };
+
+#============= httpd_t ==============
+
+# Allow to execute script cmd.cgi by httpd_t
+allow httpd_t var_log_t:file { read write execute };
+allow httpd_t var_log_t:dir { read execute };
+
+#============= nagios_t ==============
+
+# Allow to execute script nagios.cmd by nagios_t
+allow nagios_t var_log_t:file { read write execute };
+allow nagios_t var_log_t:dir { read execute };

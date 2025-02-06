@@ -1,0 +1,11 @@
+- name: Open firewall ports
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ ports }}"
+
+
+- name: Reload firewall
+  command: firewall-cmd --reload

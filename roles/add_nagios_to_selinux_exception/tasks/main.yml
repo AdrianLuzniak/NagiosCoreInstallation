@@ -1,0 +1,48 @@
+- name: Gather SELinux facts
+  ansible.builtin.setup:
+    gather_subset:
+      - selinux
+
+- name: Ensure SELinux is in Enforcing mode
+  command: setenforce 1
+  when: ansible_facts.selinux.mode != 'enforcing'
+
+- name: Copy NagiosRules.te to the server
+  copy:
+    src: "{{ local_nagios_rules_path }}"
+    dest: "/tmp/{{ nagios_rules_file }}"
+
+- name: Check if SELinux module is loaded
+  command: semodule -l
+  register: selinux_module_check
+  
+
+- name: Remove existing SELinux module if force_add_module is true
+  command: semodule -r "{{ nagios_module_name }}"
+  when: force_add_module and selinux_module_check.rc == 0
+  notify:
+    - Debug "Module removed because force_add_module is true"
+
+- name: Skip module creation if already exists and force_add_module is false
+  debug:
+    msg: "SELinux module '{{ nagios_module_name }}' already exists. Skipping module creation."
+  when: selinux_module_check.rc == 0 and not force_add_module
+
+- name: Compile the SELinux module .mod file
+  command: checkmodule -M -m -o /tmp/NagiosRules.mod /tmp/{{ nagios_rules_file }}
+  when: selinux_module_check.rc != 0 or force_add_module
+
+- name: Create the SELinux package .pp
+  command: semodule_package -o /tmp/NagiosRules.pp -m /tmp/NagiosRules.mod
+  when: selinux_module_check.rc != 0 or force_add_module
+
+- name: Load the SELinux module
+  command: semodule -X 300 -i /tmp/NagiosRules.pp
+  when: selinux_module_check.rc != 0 or force_add_module
+
+- name: Check if SELinux module is loaded
+  command: semodule -l
+  register: loaded_modules
+  failed_when: "'NagiosRules' not in loaded_modules.stdout"
+
+
