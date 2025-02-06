@@ -1,7 +1,8 @@
-- name: Restart Nagios
+- name: Restart Nagios and make sure it's enabled
   systemd:
     name: nagios
     state: restarted
+    enabled: true
 
 
 - name: Ensure Nagios service is running

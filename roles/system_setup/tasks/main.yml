@@ -8,9 +8,7 @@
     name: epel-release
     state: present
 
-
 - name: Update and upgrade system packages
-  dnf:
-    name: "*"
+  package:
+    name: '*'
     state: latest
-  tags: update
