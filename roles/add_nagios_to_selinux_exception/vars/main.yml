@@ -2,3 +2,4 @@
     nagios_module_name: "NagiosRules"
     local_nagios_rules_path: "{{ role_path }}/files/NagiosRules.te"
     force_add_module: true
+    

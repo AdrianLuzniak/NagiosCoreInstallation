@@ -1,3 +1,3 @@
 - name: Debug "Module removed because force_add_module is true"
   debug:
-    msg: "SELinux module '{{ nagios_module_name }}' was removed and a new module will be added."
+    msg: "SELinux module '{{ nagios_module_name }}' was removed and a new module {{ nagios_module_name }} was added."

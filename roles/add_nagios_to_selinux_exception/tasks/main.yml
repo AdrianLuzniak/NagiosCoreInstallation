@@ -45,8 +45,14 @@
     dest: "/tmp/{{ nagios_rules_file }}"
   when: not module_exists or force_add_module
   
+
+- name: Display module name
+  debug:
+    msg: "{{ nagios_module_name }}"
+
+
 - name: Remove existing SELinux module if force_add_module is true
-  command: semodule -r "{{ nagios_module_name }}"
+  command: semodule -X 300 -r "{{ nagios_module_name }}"
   when: module_exists and force_add_module
   notify:
     - Debug "Module removed because force_add_module is true"

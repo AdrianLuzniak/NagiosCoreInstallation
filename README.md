@@ -133,9 +133,21 @@ audit2allow -M NagiosRule < /var/log/audit/audit.log
 Nawet jeśli nie ma pliku .pp to poniższa komenda nie zwraca błędu!!!
 semodule -i NagiosRule.pp
 
+__________________________________________________________________________
+Wyświetlanie modułów z priorytetami w SELinux
+semodule --list-modules=full
 
+Moduły SELinux mają przypisany numer priorytetu, który jest używany do określenia, w jakiej kolejności moduły są ładowane lub stosowane. Moduły o wyższym priorytecie są ładowane później i mogą nadpisywać reguły modułów o niższym priorytecie. Moduły z wyższym priorytetem mają większą wagę w przypadku konfliktów.
 
+Jeśli moduł został dodany z priorytetem 300 to komenda:
 
+semodule -r NagiosRules
+Zwróci błąd:
+libsemanage.semanage_direct_remove_key: Unable to remove module NagiosRules at priority 400. (No such file or directory).
+semodule:  Failed!
+
+Należy skorzystać z 
+semodule -X 300 -r NagiosRules
 __________________________________________________________________________
 Usuwanie konfliktów z pakietami:
 Jeżeli wystąpi konflikt pomiędzy dwoma pakietami, to trzeba usunąć zainstalowany już pakiet i ponowić aktualizację paczek
