@@ -1,0 +1,18 @@
+- name: Install Nagios client
+  package:
+    name:
+      - nrpe
+      - nagios-plugins-all
+    state: present
+
+- name: Configure NRPE (Nagios Remote Plugin Executor)
+  copy:
+    src: nrpe.cfg
+    dest: "{{ nagios_client_config_path}}"
+    mode: '0644'
+
+- name: Ensure NRPE is enabled and running
+  systemd:
+    name: nrpe
+    state: started
+    enabled: true

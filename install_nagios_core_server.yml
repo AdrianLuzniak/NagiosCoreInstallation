@@ -11,3 +11,12 @@
     - restart_nagios_check_service_status
     - add_nagios_to_selinux_exception
     #- remove_nagios_from_selinux_exception
+
+- name: Setup Nagios Monitoring Client
+  hosts: AnsibleTarget2
+  become: true
+  roles:
+    #- system_setup
+    - install_nagios_dependencies
+    - install_nagios_client
+
