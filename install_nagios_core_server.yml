@@ -2,11 +2,11 @@
   hosts: AnsibleTarget1
   become: true
   roles:
-    - system_setup
-    - install_nagios_dependencies
-    - install_nagios_server
-    - configure_firewall
-    - install_nagios_plugins_dependencies
-    - install_nagios_plugins
-    - restart_nagios_check_service_status
+    #- system_setup
+    #- install_nagios_dependencies
+    #- install_nagios_server
+    #- configure_firewall
+    #- install_nagios_plugins_dependencies
+    #- install_nagios_plugins
+    #- restart_nagios_check_service_status
     - add_nagios_to_selinux_exception
