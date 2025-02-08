@@ -25,12 +25,12 @@
   register: selinux_mode
   changed_when: false
 
-- name: Display SELinux status (force refresh)
+- name: Display SELinux mode (force refresh)
   debug:
     msg: "SELinux mode: {{ selinux_mode.stdout }}"
 
 
-- name: Display SELinux module status
+- name: Display {{ nagios_module_name }} SELinux module status
   debug:
     msg: >-
       {% if module_exists %}
@@ -39,17 +39,12 @@
       ❌ SELinux module '{{ nagios_module_name }}' is NOT loaded.
       {% endif %}
 
-- name: Copy NagiosRules.te to the server
+- name: Copy {{ nagios_module_name }}.te to the server
   copy:
     src: "{{ local_nagios_rules_path }}"
     dest: "/tmp/{{ nagios_rules_file }}"
   when: not module_exists or force_add_module
   
-
-- name: Display module name
-  debug:
-    msg: "{{ nagios_module_name }}"
-
 
 - name: Remove existing SELinux module if force_add_module is true
   command: semodule -X "{{ nagios_module_priority }}" -r "{{ nagios_module_name }}"

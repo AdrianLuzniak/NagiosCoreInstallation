@@ -1,0 +1,52 @@
+- name: Gather SELinux facts
+  ansible.builtin.setup:
+    gather_subset:
+      - selinux
+
+- name: Display SELinux status 
+  debug:
+    msg: "SELinux mode: {{ ansible_facts.selinux.mode }}"
+
+- name: Save list of all SELinux loaded modules
+  command: semodule -l
+  register: selinux_modules_check
+  changed_when: false
+
+- name: Check if {{ nagios_module_name }} is loaded in SELinux
+  set_fact:
+    module_exists: "{{ nagios_module_name in selinux_modules_check.stdout }}"
+
+- name: Save initial value of module_exists
+  set_fact:
+    initial_module_exists: "{{ module_exists }}"
+
+- name: Copy {{ nagios_module_name }}.te from the server
+  file:
+    path: "/tmp/{{ nagios_rules_file }}"
+    state: absent
+  when: module_exists
+
+- name: Remove existing SELinux  {{ nagios_module_name }} module
+  command: semodule -X "{{ nagios_module_priority }}" -r "{{ nagios_module_name }}"
+  when: module_exists 
+
+
+- name: Save list of all SELinux loaded modules
+  command: semodule -l
+  register: selinux_modules_check
+  changed_when: false
+
+
+- name: Check if {{ nagios_module_name }} is loaded in SELinux
+  set_fact:
+    module_exists: "{{ nagios_module_name in selinux_modules_check.stdout }}"
+
+
+- name: Display {{ nagios_module_name }} SELinux module status
+  debug:
+    msg: >-
+      {% if initial_module_exists != module_exists %} 
+      ✅ SELinux module '{{ nagios_module_name }}' is was successfully removed.
+      {% else %}
+      ❌ SELinux module '{{ nagios_module_name }}' was not installed in the system.
+      {% endif %}

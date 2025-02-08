@@ -10,3 +10,4 @@
     #- install_nagios_plugins
     #- restart_nagios_check_service_status
     - add_nagios_to_selinux_exception
+    #- remove_nagios_from_selinux_exception
