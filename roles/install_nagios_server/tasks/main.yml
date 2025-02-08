@@ -72,7 +72,7 @@
 
 
 - name: Configure Nagios admin account
-  shell: htpasswd -bc /usr/local/nagios/etc/htpasswd.users nagiosadmin password
+  shell: htpasswd -bc /usr/local/nagios/etc/htpasswd.users {{ nagios_admin_username }} {{ nagios_admin_password }}
   args:
     executable: /bin/bash
   no_log: true

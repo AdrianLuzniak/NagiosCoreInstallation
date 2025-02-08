@@ -3,11 +3,11 @@
   become: true
   roles:
     #- system_setup
-    #- install_nagios_dependencies
-    #- install_nagios_server
-    #- configure_firewall
-    #- install_nagios_plugins_dependencies
-    #- install_nagios_plugins
-    #- restart_nagios_check_service_status
+    - install_nagios_dependencies
+    - install_nagios_server
+    - configure_firewall
+    - install_nagios_plugins_dependencies
+    - install_nagios_plugins
+    - restart_nagios_check_service_status
     - add_nagios_to_selinux_exception
     #- remove_nagios_from_selinux_exception
