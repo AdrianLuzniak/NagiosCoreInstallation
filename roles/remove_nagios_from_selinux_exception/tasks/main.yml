@@ -20,13 +20,13 @@
   set_fact:
     initial_module_exists: "{{ module_exists }}"
 
-- name: Copy {{ nagios_module_name }}.te from the server
+- name: Delete {{ nagios_module_name }}.te file from the server
   file:
     path: "/tmp/{{ nagios_rules_file }}"
     state: absent
   when: module_exists
 
-- name: Remove existing SELinux  {{ nagios_module_name }} module
+- name: Remove existing SELinux {{ nagios_module_name }} module
   command: semodule -X "{{ nagios_module_priority }}" -r "{{ nagios_module_name }}"
   when: module_exists 
 

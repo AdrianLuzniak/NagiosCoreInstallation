@@ -28,7 +28,7 @@
 - name: Display SELinux mode (force refresh)
   debug:
     msg: "SELinux mode: {{ selinux_mode.stdout }}"
-
+  changed_when: false
 
 - name: Display {{ nagios_module_name }} SELinux module status
   debug:
@@ -38,6 +38,8 @@
       {% else %}
       ❌ SELinux module '{{ nagios_module_name }}' is NOT loaded.
       {% endif %}
+  changed_when: false
+
 
 - name: Copy {{ nagios_module_name }}.te to the server
   copy:
@@ -68,6 +70,17 @@
 - name: Load the SELinux module
   command: semodule -X {{ nagios_module_priority }} -i /tmp/{{ nagios_module_name }}.pp
   when: not module_exists or force_add_module
+
+
+- name: Refresh SELinux modules after loading
+  command: semodule -l
+  register: selinux_modules_check_after_load
+  changed_when: false
+
+  
+- name: Update module_exists after loading {{ nagios_module_name }} module
+  set_fact:
+    module_exists: "{{ nagios_module_name in selinux_modules_check_after_load.stdout }}"
 
 - name: Display SELinux module status
   debug:
