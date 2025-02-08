@@ -52,7 +52,7 @@
 
 
 - name: Remove existing SELinux module if force_add_module is true
-  command: semodule -X 300 -r "{{ nagios_module_name }}"
+  command: semodule -X "{{ nagios_module_priority }}" -r "{{ nagios_module_name }}"
   when: module_exists and force_add_module
   notify:
     - Debug "Module removed because force_add_module is true"
@@ -71,7 +71,7 @@
   when: not module_exists or force_add_module
 
 - name: Load the SELinux module
-  command: semodule -X 300 -i /tmp/NagiosRules.pp
+  command: semodule -X {{ nagios_module_priority }} -i /tmp/NagiosRules.pp
   when: not module_exists or force_add_module
 
 - name: Display SELinux module status
