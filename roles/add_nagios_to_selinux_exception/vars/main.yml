@@ -1,6 +1,6 @@
-    nagios_rules_file: "NagiosRules.te"
     nagios_module_name: "NagiosRules"
+    nagios_rules_file: "{{ nagios_module_name }}.te"
     nagios_module_priority: "300"
-    local_nagios_rules_path: "{{ role_path }}/files/NagiosRules.te"
+    local_nagios_rules_path: "{{ role_path }}/files/{{ nagios_module_name }}.te"
     force_add_module: true
     

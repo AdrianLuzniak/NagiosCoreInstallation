@@ -63,15 +63,15 @@
   when: module_exists and not force_add_module
 
 - name: Compile the SELinux module .mod file
-  command: checkmodule -M -m -o /tmp/NagiosRules.mod /tmp/{{ nagios_rules_file }}
+  command: checkmodule -M -m -o /tmp/{{ nagios_module_name }}.mod /tmp/{{ nagios_rules_file }}
   when: not module_exists or force_add_module
 
 - name: Create the SELinux package .pp
-  command: semodule_package -o /tmp/NagiosRules.pp -m /tmp/NagiosRules.mod
+  command: semodule_package -o /tmp/{{ nagios_module_name }}.pp -m /tmp/{{ nagios_module_name }}.mod
   when: not module_exists or force_add_module
 
 - name: Load the SELinux module
-  command: semodule -X {{ nagios_module_priority }} -i /tmp/NagiosRules.pp
+  command: semodule -X {{ nagios_module_priority }} -i /tmp/{{ nagios_module_name }}.pp
   when: not module_exists or force_add_module
 
 - name: Display SELinux module status
