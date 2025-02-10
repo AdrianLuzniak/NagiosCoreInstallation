@@ -1,18 +1,84 @@
-- name: Install Nagios client
-  package:
+- name: Install required build tools
+  dnf:
     name:
-      - nrpe
-      - nagios-plugins-all
+      - gcc
+      - glibc
+      - glibc-common
+      - make
+      - gettext
+      - automake
+      - autoconf
+      - wget
+      - openssl-devel
+      - net-snmp
+      - net-snmp-utils
+      - epel-release
+      - perl-Net-SNMP
     state: present
 
-- name: Configure NRPE (Nagios Remote Plugin Executor)
-  copy:
-    src: nrpe.cfg
-    dest: "{{ nagios_client_config_path}}"
-    mode: '0644'
 
-- name: Ensure NRPE is enabled and running
+- name: Download Nagios Plugins source code
+  get_url:
+    url: "https://nagios-plugins.org/download/nagios-plugins-{{ nagios_plugins_version }}.tar.gz"
+    dest: "/tmp/nagios-plugins-{{ nagios_plugins_version }}.tar.gz"
+
+
+- name: Extract Nagios Plugins source code
+  ansible.builtin.unarchive:
+    src: "/tmp/nagios-plugins-{{ nagios_plugins_version }}.tar.gz"
+    dest: "/tmp"
+    remote_src: yes
+
+- name: Compile and install Nagios Plugins
+  shell: |
+    cd /tmp/nagios-plugins-{{ nagios_plugins_version }}
+    ./configure
+    make
+    make install
+  args:
+    executable: /bin/bash
+
+
+- name: Install NRPE package
+  dnf:
+    name: nrpe
+    state: present
+
+- name: Enable and start NRPE
   systemd:
     name: nrpe
     state: started
     enabled: true
+
+- name: Configure NRPE to allow Nagios server
+  lineinfile:
+    path: /etc/nagios/nrpe.cfg
+    regexp: '^allowed_hosts='
+    line: 'allowed_hosts=127.0.0.1,192.168.0.159'
+  notify:
+    - Restart NRPE service
+  
+- name: Add custom NRPE commands
+  blockinfile:
+    path: /etc/nagios/nrpe.cfg
+    marker: "# {mark} ANSIBLE GENERATED"
+    block: |
+        command[check_load]=/usr/lib64/nagios/plugins/check_load -w 5,4,3 -c 10,6,4
+        command[check_disk]=/usr/lib64/nagios/plugins/check_disk -w 20% -c 10% -p /
+        command[check_cpu]=/usr/lib64/nagios/plugins/check_cpu -w 80% -c 90%
+
+- name: Enable and start NRPE service
+  systemd:
+    name: nrpe
+    state: started
+    enabled: true
+
+- name: Open NRPE port in firewall
+  firewalld:
+    port: 5666/tcp
+    permanent: true
+    state: enabled
+
+- name: Reload firewall
+  command: firewall-cmd --reload
+

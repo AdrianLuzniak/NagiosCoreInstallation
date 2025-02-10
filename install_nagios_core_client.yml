@@ -1,0 +1,5 @@
+- name: Setup Nagios Monitoring Server
+  hosts: AnsibleTarget2
+  become: true
+  roles:
+    - install_nagios_client

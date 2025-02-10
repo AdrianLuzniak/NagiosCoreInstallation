@@ -3,7 +3,7 @@ all:
         webservers:
             hosts:
                 AnsibleTarget1:
-                    ansible_host: 192.168.100.125
+                    ansible_host: 192.168.0.159
                     ansible_ssh_user: osboxes
                     ansible_ssh_pass: osboxes.org
                     ansible_become: yes
@@ -12,7 +12,7 @@ all:
                     ansible_become_pass: osboxes.org
 
                 AnsibleTarget2:
-                    ansible_host: 192.168.100.126
+                    ansible_host: 192.168.0.102
                     ansible_ssh_user: osboxes
                     ansible_ssh_pass: osboxes.org
                     ansible_become: yes

@@ -1,0 +1,4 @@
+- name: Restart NRPE service
+  systemd:
+    name: nrpe
+    state: restarted
