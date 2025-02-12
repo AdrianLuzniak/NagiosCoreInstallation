@@ -1,1 +1,2 @@
 nagios_plugins_version: "2.4.4"
+force_install_nrpe_and_plugins: false

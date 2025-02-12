@@ -17,10 +17,69 @@
     state: present
 
 
+- name: Check if nrpe.cfg exists and is not empty
+  stat:
+    path: /etc/nagios/nrpe.cfg
+  register: nrpe_cfg_check
+  changed_when: false
+
+
+- name: Show nrpe.cfg status message
+  debug:
+    msg: >-
+      {%- if nrpe_cfg_check.stat.exists and nrpe_cfg_check.stat.size > 0 -%}
+      ✅ NRPE config exists and is not empty
+      {%- else -%}
+      ❌ NRPE config is missing or empty
+      {%- endif -%}
+  changed_when: false
+
+
+- name: Check if Nagios plugins exist (at least one file in libexec)
+  find:
+    paths: /usr/local/nagios/libexec
+    file_type: file
+  register: nagios_plugins_check
+  failed_when: false
+
+
+- name: Set fact if libexec exists and contains at least one plugin
+  set_fact:
+    libexec_exists: "{{ nagios_plugins_check.matched > 0 }}"
+
+
+- name: Show libexec - plugin folder status message
+  debug:
+    msg: >-
+      {%- if libexec_exists -%}
+      ✅ libexec exists and is not empty
+      {%- else -%}
+      ❌ libexec is missing or empty
+      {%- endif -%}
+  changed_when: false
+
+
+- name: Display info message about installation process
+  debug:
+    msg: >-
+      {% if force_install_nrpe_and_plugins %}
+      ✅ force_install_nrpe_and_plugins: {{ force_install_nrpe_and_plugins }} - installation will start
+      {% else %}
+      ❌ force_install_nrpe_and_plugins: {{ force_install_nrpe_and_plugins }} - installation will be SKIPPED
+      {% endif %}
+  changed_when: false
+
+
+- name: Set fact for installation condition
+  set_fact:
+    install_required: "{{ (not nrpe_cfg_check.stat.exists and not libexec_exists) or force_install_nrpe_and_plugins }}"
+
+
 - name: Download Nagios Plugins source code
   get_url:
     url: "https://nagios-plugins.org/download/nagios-plugins-{{ nagios_plugins_version }}.tar.gz"
     dest: "/tmp/nagios-plugins-{{ nagios_plugins_version }}.tar.gz"
+  when: install_required
 
 
 - name: Extract Nagios Plugins source code
@@ -28,6 +87,8 @@
     src: "/tmp/nagios-plugins-{{ nagios_plugins_version }}.tar.gz"
     dest: "/tmp"
     remote_src: yes
+  when: install_required
+
 
 - name: Compile and install Nagios Plugins
   shell: |
@@ -37,18 +98,23 @@
     make install
   args:
     executable: /bin/bash
+  when: install_required
 
 
 - name: Install NRPE package
   dnf:
     name: nrpe
     state: present
+  when: install_required
+
 
 - name: Enable and start NRPE
   systemd:
     name: nrpe
     state: started
     enabled: true
+  when: install_required
+
 
 - name: Configure NRPE to allow Nagios server
   lineinfile:
@@ -57,7 +123,9 @@
     line: 'allowed_hosts=127.0.0.1,192.168.0.159'
   notify:
     - Restart NRPE service
-  
+  when: install_required
+
+
 - name: Add custom NRPE commands
   blockinfile:
     path: /etc/nagios/nrpe.cfg
@@ -66,19 +134,37 @@
         command[check_load]=/usr/lib64/nagios/plugins/check_load -w 5,4,3 -c 10,6,4
         command[check_disk]=/usr/lib64/nagios/plugins/check_disk -w 20% -c 10% -p /
         command[check_cpu]=/usr/lib64/nagios/plugins/check_cpu -w 80% -c 90%
+  when: install_required
+
 
 - name: Enable and start NRPE service
   systemd:
     name: nrpe
     state: started
     enabled: true
+  when: install_required
+
 
 - name: Open NRPE port in firewall
   firewalld:
     port: 5666/tcp
     permanent: true
     state: enabled
+  when: install_required
+
 
 - name: Reload firewall
   command: firewall-cmd --reload
+  when: install_required
 
+
+- name: Verify check_load command output
+  command: /usr/local/nagios/libexec/check_load -w 5,4,3 -c 10,8,6
+  register: check_load_result
+  changed_when: false
+  failed_when: check_load_result.rc != 0
+
+
+- name: Debug check_load output
+  debug:
+    msg: "{{ check_load_result.stdout }}"
