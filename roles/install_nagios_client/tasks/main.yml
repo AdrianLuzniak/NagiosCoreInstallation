@@ -120,7 +120,7 @@
   lineinfile:
     path: /etc/nagios/nrpe.cfg
     regexp: '^allowed_hosts='
-    line: 'allowed_hosts=127.0.0.1,192.168.0.159'
+    line: 'allowed_hosts={{ allowed_hosts_to_client }}'
   notify:
     - Restart NRPE service
   when: install_required
@@ -131,10 +131,11 @@
     path: /etc/nagios/nrpe.cfg
     marker: "# {mark} ANSIBLE GENERATED"
     block: |
-        command[check_load]=/usr/lib64/nagios/plugins/check_load -w 5,4,3 -c 10,6,4
-        command[check_disk]=/usr/lib64/nagios/plugins/check_disk -w 20% -c 10% -p /
-        command[check_cpu]=/usr/lib64/nagios/plugins/check_cpu -w 80% -c 90%
-  when: install_required
+      {% for item in nrpe_commands | unique(attribute='name') %}
+      command[{{ item.name }}] = {{ item.command }}
+      {% endfor %}
+    backup: yes
+  when: add_nrpe_commands
 
 
 - name: Enable and start NRPE service
