@@ -1,0 +1,89 @@
+###############################################################################
+# LOCALHOST.CFG - SAMPLE OBJECT CONFIG FILE FOR MONITORING THIS MACHINE
+###############################################################################
+
+
+###############################################################################
+# HOST DEFINITION
+###############################################################################
+
+define host {
+    use                     linux-server
+    host_name               {{ nagios_hostname }}
+    alias                   {{ nagios_server_alias }}
+    address                 {{ nagios_host_address }}
+}
+
+
+###############################################################################
+# HOST GROUP DEFINITION
+###############################################################################
+
+define hostgroup {
+    hostgroup_name          {{ hostgroup_name }}
+    alias                   {{ hostgroup_alias }}
+    members                 {{ nagios_hostname }}
+}
+
+
+###############################################################################
+# SERVICE DEFINITIONS
+###############################################################################
+
+define service {
+    use                     local-service
+    host_name               {{ nagios_hostname }}
+    service_description     PING
+    check_command           check_ping!{{ nagios_ping_warning }},{{ nagios_ping_critical }}!{{ nagios_ping_timeout }}
+}
+
+define service {
+    use                     local-service
+    host_name               {{ nagios_hostname }}
+    service_description     Root Partition
+    check_command           check_local_disk!{{ nagios_disk_warning }}!{{ nagios_disk_critical }}!/
+}
+
+define service {
+    use                     local-service
+    host_name               {{ nagios_hostname }}
+    service_description     Current Users
+    check_command           check_local_users!{{ nagios_users_warning }}!{{ nagios_users_critical }}
+}
+
+define service {
+    use                     local-service
+    host_name               {{ nagios_hostname }}
+    service_description     Total Processes
+    check_command           check_local_procs!{{ nagios_procs_warning }}!{{ nagios_procs_critical }}!RSZDT
+}
+
+define service {
+    use                     local-service
+    host_name               {{ nagios_hostname }}
+    service_description     Current Load
+    check_command           check_local_load!{{ nagios_load_warning }}!{{ nagios_load_critical }}
+}
+
+define service {
+    use                     local-service
+    host_name               {{ nagios_hostname }}
+    service_description     Swap Usage
+    check_command           check_local_swap!{{ nagios_swap_warning }}!{{ nagios_swap_critical }}
+}
+
+define service {
+    use                     local-service
+    host_name               {{ nagios_hostname }}
+    service_description     SSH
+    check_command           check_ssh
+    notifications_enabled   {{ nagios_ssh_notifications_enabled }}
+}
+
+define service {
+    use                     local-service
+    host_name               {{ nagios_hostname }}
+    service_description     HTTP
+    check_command           check_http
+    notifications_enabled   {{ nagios_http_notifications_enabled }}
+}

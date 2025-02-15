@@ -1,0 +1,38 @@
+set_custom_paths: true
+nagios_hostname: "Nagios_Server"
+nagios_server_alias: "Nagios_Server"
+hostgroup_name: "linux-servers" #no spaces allowed
+hostgroup_alias: "Linux Server"
+nagios_host_address: "127.0.0.1"
+
+
+nagios_custom_config:
+  objects_dir: "/usr/local/nagios/etc/objects"
+  host_dir: "/usr/local/nagios/etc/host"
+  clients_dir: "/usr/local/nagios/etc/clients"
+
+# Default monitors thresholds
+nagios_ping_warning: "100.0,20%"
+nagios_ping_critical: "500.0,60%"
+nagios_ping_timeout: "5"
+
+nagios_disk_warning: "20%"
+nagios_disk_critical: "10%"
+
+nagios_users_warning: "20"
+nagios_users_critical: "50"
+
+nagios_procs_warning: "250"
+nagios_procs_critical: "400"
+
+nagios_load_warning: "5.0,4.0,3.0"
+nagios_load_critical: "10.0,6.0,4.0"
+
+nagios_swap_warning: "20%"
+nagios_swap_critical: "10%"
+
+nagios_ssh_notifications_enabled: "0"
+nagios_http_notifications_enabled: "0"
+
+
+

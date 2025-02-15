@@ -1,9 +1,0 @@
-set_custom_paths: true
-
-nagios_default_config:
-  objects_dir: "/usr/local/nagios/etc/objects"
-
-nagios_custom_config:
-  objects_dir: "/usr/local/nagios/etc/objects"
-  host_dir: "/usr/local/nagios/etc/host"
-  clients_dir: "/usr/local/nagios/etc/clients"
