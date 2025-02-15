@@ -120,10 +120,10 @@
   lineinfile:
     path: /etc/nagios/nrpe.cfg
     regexp: '^allowed_hosts='
-    line: 'allowed_hosts={{ allowed_hosts_to_client }}'
+    line: "allowed_hosts={{ '127.0.0.1,' + (groups['servers'] | map('extract', hostvars, 'ansible_host') | list | default([])) | join(',') }}"
   notify:
     - Restart NRPE service
-  when: install_required
+  when: install_required or add_allowed_hosts
 
 
 - name: Add custom NRPE commands

@@ -1,6 +1,8 @@
 nagios_plugins_version: "2.4.4"
-allowed_hosts_to_client: '127.0.0.1,192.168.0.159'
+
+# Automatically fetch server IP from inventory
 force_install_nrpe_and_plugins: false
+add_allowed_hosts: true
 add_nrpe_commands: true
 
 nrpe_commands:
