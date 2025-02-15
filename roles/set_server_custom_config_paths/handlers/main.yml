@@ -1,0 +1,4 @@
+- name: Restart Nagios Server
+  systemd:
+    name: nagios
+    state: restarted

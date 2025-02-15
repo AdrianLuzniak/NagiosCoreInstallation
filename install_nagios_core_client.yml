@@ -4,8 +4,8 @@
   roles:
     - install_nagios_client
 
-# - name: Add nagios clients to server
-#   hosts: servers
-#   become: true
-#   roles:
-#     - add_nagios_clients_to_server
+- name: Setup Nagios Monitoring Server
+  hosts: AnsibleTarget2
+  become: true
+  roles:
+    - install_nagios_client

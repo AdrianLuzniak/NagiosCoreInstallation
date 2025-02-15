@@ -1,0 +1,42 @@
+- name: Debug set_custom_paths value
+  debug:
+    msg: "The value of set_custom_paths is {{ set_custom_paths }}"
+
+- name: Create Nagios config file from template
+  template:    
+    src: templates/nagios.cfg.j2
+    dest: /usr/local/nagios/etc/nagios.cfg
+    mode: "2775"
+    owner: "nagios"
+    group: "nagcmd"
+  when: set_custom_paths
+
+- name: Ensure Nagios custom directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "2775"
+    owner: "nagios"
+    group: "nagcmd"
+  loop:
+    - "{{ nagios_custom_config.objects_dir }}"
+    - "{{ nagios_custom_config.host_dir }}"
+    - "{{ nagios_custom_config.clients_dir }}"
+
+- name: Check if localhost.cfg exists
+  stat:
+    path: "{{ nagios_custom_config.objects_dir }}/localhost.cfg"
+  register: localhost_cfg_stat
+  ignore_errors: true
+
+- name: Move localhost.cfg from objects to host directory if it exists
+  copy:
+    src: "{{ nagios_custom_config.objects_dir }}/localhost.cfg"
+    dest: "{{ nagios_custom_config.host_dir }}/localhost.cfg"
+    remote_src: yes
+  when: localhost_cfg_stat.stat.exists
+
+- name: Restart Nagios Server
+  systemd:
+    name: nagios
+    state: restarted
