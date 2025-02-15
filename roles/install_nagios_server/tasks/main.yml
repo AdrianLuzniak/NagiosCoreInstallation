@@ -97,4 +97,4 @@
     name: nagios
     state: started
     enabled: true
-  when: nagios_server_installed.stat.exists or force_install_nagios
+  when: not nagios_server_installed.stat.exists or force_install_nagios

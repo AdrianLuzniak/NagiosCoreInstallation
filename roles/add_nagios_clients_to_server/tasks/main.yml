@@ -1,0 +1,28 @@
+- name: Ensure clients directory exists
+  file:
+    path: /usr/local/nagios/etc/host
+    state: directory
+    owner: nagios
+    group: nagcmd
+    mode: '2755'
+
+- name: Generate Nagios client config
+  template:
+    src: templates/nagios_client.cfg.j2
+    dest: "/usr/local/nagios/etc/host/{{ item }}.cfg"
+    owner: nagios
+    group: nagcmd
+    mode: '2755'
+  #delegate_to: "{{ item }}"
+  loop: "{{ groups['clients'] }}"
+ 
+
+- name: Set owner and group for Nagios client config
+  file:
+    path: "/usr/local/nagios/etc/host/{{ item }}.cfg"
+    owner: nagios
+    group: nagcmd
+    mode: '2755'
+  #delegate_to: "{{ item }}"
+  loop: "{{ groups['clients'] }}"
+  notify: Restart Nagios Server

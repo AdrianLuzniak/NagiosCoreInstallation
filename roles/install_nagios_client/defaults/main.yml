@@ -1,0 +1,2 @@
+nagios_server: "AnsibleTarget1"
+nagios_client_config_path: "/etc/nagios/nrpe.cfg"

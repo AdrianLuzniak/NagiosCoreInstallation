@@ -56,7 +56,7 @@
     path: "{{ item }}"
     owner: nagios
     group: nagcmd
-    mode: "2755"
+    mode: "2775"
     recurse: yes
   with_items:
     - /usr/local/nagios
