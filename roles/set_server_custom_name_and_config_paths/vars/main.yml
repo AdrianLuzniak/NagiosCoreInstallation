@@ -12,27 +12,47 @@ nagios_custom_config:
   clients_dir: "/usr/local/nagios/etc/clients"
 
 # Default monitors thresholds
-nagios_ping_warning: "100.0,20%"
-nagios_ping_critical: "500.0,60%"
-nagios_ping_timeout: "5"
+nagios_monitors:
+  check_local_load:
+    enabled: true
+    description: "Current Load"
+    params: "5.0,4.0,3.0!10.0,6.0,4.0"
 
-nagios_disk_warning: "20%"
-nagios_disk_critical: "10%"
+  check_local_users:
+    enabled: true
+    description: "Current Users"
+    params: "20!50"
 
-nagios_users_warning: "20"
-nagios_users_critical: "50"
+  check_http:
+    enabled: true
+    description: "HTTP"
+    params: ""
 
-nagios_procs_warning: "250"
-nagios_procs_critical: "400"
+  check_ping:
+    enabled: true
+    description: "PING"
+    params: "100.0,20%!500.0,60%"
+  
+  
+  check_local_disk:
+    enabled: true
+    description: "Root Partition"
+    params: "20%!10%!/"
+  
+  check_ssh:
+    enabled: true
+    description: "SSH"
+    params: ""
 
-nagios_load_warning: "5.0,4.0,3.0"
-nagios_load_critical: "10.0,6.0,4.0"
+  check_local_procs:
+    enabled: true
+    description: "Total Processes"
+    params: "250!400!RSZDT"
 
-nagios_swap_warning: "20%"
-nagios_swap_critical: "10%"
-
-nagios_ssh_notifications_enabled: "0"
-nagios_http_notifications_enabled: "0"
-
+  check_local_swap:
+    enabled: true  
+    description: "Swap Usage"
+    params: "20%!10%"
+  
 
 
