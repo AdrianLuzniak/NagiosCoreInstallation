@@ -4,41 +4,42 @@ nagios_plugins_version: "2.4.4"
 force_install_nrpe_and_plugins: false
 add_allowed_hosts: true
 add_nrpe_commands: true
+plugins_directory: "/usr/local/nagios/libexec"
 
 nrpe_commands:
   # 🔹 System Monitoring
-  - { name: "check_load", command: "/usr/lib64/nagios/plugins/check_load -w 5,4,3 -c 10,6,4" }
-  - { name: "check_disk", command: "/usr/lib64/nagios/plugins/check_disk -w 20% -c 10% -p /" }
-  - { name: "check_memory", command: "/usr/lib64/nagios/plugins/check_memory -w 80 -c 90" }
-  - { name: "check_swap", command: "/usr/lib64/nagios/plugins/check_swap -w 10% -c 5%" }
-  - { name: "check_uptime", command: "/usr/lib64/nagios/plugins/check_uptime" }
+  - { name: "check_load", command: "{{ plugins_directory }}/check_load -w 5,4,3 -c 10,6,4" }
+  - { name: "check_disk", command: "{{ plugins_directory }}/check_disk -w 20% -c 10% -p /" }
+  - { name: "check_memory", command: "{{ plugins_directory }}/check_memory -w 80 -c 90" }
+  - { name: "check_swap", command: "{{ plugins_directory }}/check_swap -w 10% -c 5%" }
+  - { name: "check_uptime", command: "{{ plugins_directory }}/check_uptime" }
 
   # Processes and users
-  - { name: "check_procs", command: "/usr/lib64/nagios/plugins/check_procs -w 150 -c 200" }
-  - { name: "check_users", command: "/usr/lib64/nagios/plugins/check_users -w 5 -c 10" }
+  - { name: "check_procs", command: "{{ plugins_directory }}/check_procs -w 150 -c 200" }
+  - { name: "check_users", command: "{{ plugins_directory }}/check_users -w 5 -c 10" }
   
   # Network and connection
-  - { name: "check_ping", command: "/usr/lib64/nagios/plugins/check_ping -H 8.8.8.8 -w 100.0,20% -c 500.0,60%" }
-  - { name: "check_dns", command: "/usr/lib64/nagios/plugins/check_dns -H example.com" }
-  - { name: "check_http", command: "/usr/lib64/nagios/plugins/check_http -H example.com -w 5 -c 10" }
-  - { name: "check_https", command: "/usr/lib64/nagios/plugins/check_http -H example.com -S -w 5 -c 10" }
-  - { name: "check_ftp", command: "/usr/lib64/nagios/plugins/check_ftp -H ftp.example.com" }
-  - { name: "check_ssh", command: "/usr/lib64/nagios/plugins/check_ssh -H remote-server" }
-  - { name: "check_tcp_80", command: "/usr/lib64/nagios/plugins/check_tcp -H example.com -p 80" }
-  - { name: "check_ntp", command: "/usr/lib64/nagios/plugins/check_ntp -H time.google.com" }
+  - { name: "check_ping", command: "{{ plugins_directory }}/check_ping -H 8.8.8.8 -w 100.0,20% -c 500.0,60%" }
+  - { name: "check_dns", command: "{{ plugins_directory }}/check_dns -H example.com" }
+  - { name: "check_http", command: "{{ plugins_directory }}/check_http -H example.com -w 5 -c 10" }
+  - { name: "check_https", command: "{{ plugins_directory }}/check_http -H example.com -S -w 5 -c 10" }
+  - { name: "check_ftp", command: "{{ plugins_directory }}/check_ftp -H ftp.example.com" }
+  - { name: "check_ssh", command: "{{ plugins_directory }}/check_ssh -H remote-server" }
+  - { name: "check_tcp_80", command: "{{ plugins_directory }}/check_tcp -H example.com -p 80" }
+  - { name: "check_ntp", command: "{{ plugins_directory }}/check_ntp -H time.google.com" }
 
   # 🔹 Logs and files monitoring
-  - { name: "check_file_age", command: "/usr/lib64/nagios/plugins/check_file_age /var/log/syslog -w 600 -c 1200" }
-  - { name: "check_log", command: "/usr/lib64/nagios/plugins/check_log -F /var/log/messages -O /tmp/check_log.tmp -q error" }
+  - { name: "check_file_age", command: "{{ plugins_directory }}/check_file_age /var/log/syslog -w 600 -c 1200" }
+  - { name: "check_log", command: "{{ plugins_directory }}/check_log -F /var/log/messages -O /tmp/check_log.tmp -q error" }
 
   # Hardware and temperatures
-  - { name: "check_sensors", command: "/usr/lib64/nagios/plugins/check_sensors" }
-  - { name: "check_hpjd", command: "/usr/lib64/nagios/plugins/check_hpjd -H printer-ip" }
-  - { name: "check_hddtemp", command: "/usr/lib64/nagios/plugins/check_hddtemp -H 127.0.0.1" }
+  - { name: "check_sensors", command: "{{ plugins_directory }}/check_sensors" }
+  - { name: "check_hpjd", command: "{{ plugins_directory }}/check_hpjd -H printer-ip" }
+  - { name: "check_hddtemp", command: "{{ plugins_directory }}/check_hddtemp -H 127.0.0.1" }
 
   # 🔹 Services monitoring
-  - { name: "check_smtp", command: "/usr/lib64/nagios/plugins/check_smtp -H smtp.example.com" }
-  - { name: "check_pop3", command: "/usr/lib64/nagios/plugins/check_pop -H mail.example.com" }
-  - { name: "check_imap", command: "/usr/lib64/nagios/plugins/check_imap -H mail.example.com" }
-  - { name: "check_systemd_sshd", command: "/usr/lib64/nagios/plugins/check_systemd --service sshd" }
-  - { name: "check_systemd_cron", command: "/usr/lib64/nagios/plugins/check_systemd --service crond" }
+  - { name: "check_smtp", command: "{{ plugins_directory }}/check_smtp -H smtp.example.com" }
+  - { name: "check_pop3", command: "{{ plugins_directory }}/check_pop -H mail.example.com" }
+  - { name: "check_imap", command: "{{ plugins_directory }}/check_imap -H mail.example.com" }
+  - { name: "check_systemd_sshd", command: "{{ plugins_directory }}/check_systemd --service sshd" }
+  - { name: "check_systemd_cron", command: "{{ plugins_directory }}/check_systemd --service crond" }
