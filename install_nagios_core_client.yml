@@ -2,4 +2,5 @@
   hosts: AnsibleTarget2
   become: true
   roles:
+    - install_nagios_dependencies
     - install_nagios_client

@@ -1,22 +1,3 @@
-- name: Install required build tools
-  dnf:
-    name:
-      - gcc
-      - glibc
-      - glibc-common
-      - make
-      - gettext
-      - automake
-      - autoconf
-      - wget
-      - openssl-devel
-      - net-snmp
-      - net-snmp-utils
-      - epel-release
-      - perl-Net-SNMP
-    state: present
-
-
 - name: Check if nrpe.cfg exists and is not empty
   stat:
     path: /etc/nagios/nrpe.cfg

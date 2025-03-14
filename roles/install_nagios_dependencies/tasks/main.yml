@@ -1,22 +1,29 @@
 - name: Install required dependencies for Nagios Core
   dnf:
     name:
-      - httpd
-      - php
       - gcc
       - glibc
       - glibc-common
+      - make
+      - gettext
+      - automake
+      - autoconf
+      - wget
+      - openssl-devel
+      - net-snmp
+      - net-snmp-utils
+      - epel-release
+      - perl-Net-SNMP
+      - httpd
+      - php
       - glibc-devel
       - gd
       - gd-devel
-      - openssl-devel
-      - make
-      - net-snmp
-      - net-snmp-utils
       - unzip
-      - wget
       - libmcrypt
       - libmcrypt-devel
       - libcurl-devel
+      - libtool
+      - pkg-config
     state: present
   tags: dependencies
