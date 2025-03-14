@@ -122,20 +122,24 @@
   when: install_required or force_install_nrpe_and_plugins
 
 
-- name: Check if check_nrpe exists
+- name: Check if check_nrpe exists at least in one location
   stat:
-    path: /usr/lib64/nagios/plugins/check_nrpe
+    path: "{{ item }}"
   register: check_nrpe_check
+  with_items:
+    - /usr/lib64/nagios/plugins/check_nrpe
+    - /usr/local/nagios/libexec/check_nrpe
 
 
 - name: Debug check_nrpe status
   debug:
     msg: >-
-      {%- if check_nrpe_check.stat.exists -%}
-      ✅ check_nrpe plugin found
+      {%- if check_nrpe_check.results[0].stat.exists or check_nrpe_check.results[1].stat.exists -%}
+      ✅ check_nrpe plugin found in at least one location
       {%- else -%}
-      ❌ check_nrpe plugin missing, install required
-      {%- endif -%}
+      ❌ check_nrpe plugin missing in both locations
+      {%- endif %}
+
 
 - name: Configure NRPE to allow Nagios server
   lineinfile:
