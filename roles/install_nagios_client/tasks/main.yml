@@ -147,6 +147,21 @@
   when: install_required or add_allowed_hosts
 
 
+- name: Remove duplicate command definitions from nrpe.cfg using blockinfile
+  blockinfile:
+    path: /etc/nagios/nrpe.cfg
+    block: |
+      # The following examples use hardcoded command arguments...
+      # This is by far the most secure method of using NRPE
+
+      command[check_users]=/usr/lib64/nagios/plugins/check_users -w 5 -c 10
+      command[check_load]=/usr/lib64/nagios/plugins/check_load -r -w .15,.10,.05 -c .30,.25,.20
+      command[check_hda1]=/usr/lib64/nagios/plugins/check_disk -w 20% -c 10% -p /dev/hda1
+      command[check_zombie_procs]=/usr/lib64/nagios/plugins/check_procs -w 5 -c 10 -s Z
+      command[check_total_procs]=/usr/lib64/nagios/plugins/check_procs -w 150 -c 200
+    state: absent
+
+
 - name: Add custom NRPE commands
   blockinfile:
     path: /etc/nagios/nrpe.cfg
@@ -158,18 +173,12 @@
     backup: yes
   when: add_nrpe_commands
 
-- name: Change owner and permissions of /usr/local/nagios/libexec directory and files inside
-  file:
-    path: /usr/local/nagios
-    owner: nagios
-    group: nagcmd
-    mode: "2775"
-    recurse: yes
 
 - name: Ensure group nagcmd exists
   group:
     name: nagcmd
     state: present
+
 
 - name: Add nagios and nrpe users to nagcmd group
   user:
@@ -180,14 +189,41 @@
     - nagios
     - nrpe
 
+
+- name: Change owner and permissions of /usr/local/nagios/libexec directory and files inside
+  file:
+    path: /usr/local/nagios
+    owner: nagios
+    group: nagcmd
+    mode: "2775"
+    recurse: yes
+
+
 - name: Change owner and permissions of /etc/nagios directory and files inside
   file:
     path: /etc/nagios
     owner: nrpe
     group: nrpe
-    mode: "774"
+    mode: "2775"
     recurse: yes
 
+- name: Move check_nrpe plugin to plugins_directory
+  copy:
+    src: "{{ default_nrpe_directory }}/check_nrpe"
+    dest: "{{ plugins_directory }}/check_nrpe"
+    owner: nagios
+    group: nagcmd
+    mode: '2755'
+    remote_src: yes
+  when: install_required or force_install_nrpe_and_plugins
+
+- name: Remove source check_nrpe file after copying
+  file:
+    path: "{{ default_nrpe_directory }}/check_nrpe"
+    state: absent
+  notify:
+    - Restart NRPE service
+    - Restart system daemon
 
 - name: Enable and start NRPE service
   systemd:
@@ -210,13 +246,24 @@
   when: install_required
 
 
+
 - name: Verify check_load command output
-  command: /usr/local/nagios/libexec/check_load -w 5,4,3 -c 10,8,6
+  command: "{{ plugins_directory }}/check_load -w 5,4,3 -c 10,8,6"
   register: check_load_result
   changed_when: false
   failed_when: check_load_result.rc != 0
 
-
 - name: Debug check_load output
   debug:
     msg: "{{ check_load_result.stdout }}"
+
+
+- name: Verify NRPE check_load command output
+  command: "{{ plugins_directory }}/check_nrpe -H localhost -c check_load"
+  register: check_load_NRPE_result
+  changed_when: false
+  failed_when: check_load_NRPE_result.rc != 0
+
+- name: Debug NRPE check_load output
+  debug:
+    msg: "{{ check_load_NRPE_result.stdout }}"

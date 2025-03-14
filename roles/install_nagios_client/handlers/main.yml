@@ -2,3 +2,8 @@
   systemd:
     name: nrpe
     state: restarted
+
+- name: Restart system daemon
+  systemd:
+    name: systemd
+    state: reloaded
