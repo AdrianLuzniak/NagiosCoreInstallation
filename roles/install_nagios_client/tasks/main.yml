@@ -79,7 +79,7 @@
   get_url:
     url: "https://nagios-plugins.org/download/nagios-plugins-{{ nagios_plugins_version }}.tar.gz"
     dest: "/tmp/nagios-plugins-{{ nagios_plugins_version }}.tar.gz"
-  when: install_required
+  when: install_required or force_install_nrpe_and_plugins
 
 
 - name: Extract Nagios Plugins source code
@@ -87,7 +87,7 @@
     src: "/tmp/nagios-plugins-{{ nagios_plugins_version }}.tar.gz"
     dest: "/tmp"
     remote_src: yes
-  when: install_required
+  when: install_required or force_install_nrpe_and_plugins
 
 
 - name: Compile and install Nagios Plugins
@@ -98,14 +98,14 @@
     make install
   args:
     executable: /bin/bash
-  when: install_required
+  when: install_required or force_install_nrpe_and_plugins
 
 
 - name: Install NRPE package
   dnf:
     name: nrpe
     state: present
-  when: install_required
+  when: install_required or force_install_nrpe_and_plugins
 
 
 - name: Enable and start NRPE
@@ -113,14 +113,35 @@
     name: nrpe
     state: started
     enabled: true
-  when: install_required
+  when: install_required or force_install_nrpe_and_plugins
 
+- name: Install NRPE plugin for Nagios
+  dnf:
+    name: nagios-plugins-nrpe
+    state: present
+  when: install_required or force_install_nrpe_and_plugins
+
+
+- name: Check if check_nrpe exists
+  stat:
+    path: /usr/lib64/nagios/plugins/check_nrpe
+  register: check_nrpe_check
+
+
+- name: Debug check_nrpe status
+  debug:
+    msg: >-
+      {%- if check_nrpe_check.stat.exists -%}
+      ✅ check_nrpe plugin found
+      {%- else -%}
+      ❌ check_nrpe plugin missing, install required
+      {%- endif -%}
 
 - name: Configure NRPE to allow Nagios server
   lineinfile:
     path: /etc/nagios/nrpe.cfg
     regexp: '^allowed_hosts='
-    line: "allowed_hosts={{ '127.0.0.1,' + (groups['servers'] | map('extract', hostvars, 'ansible_host') | list | default([])) | join(',') }}"
+    line: "allowed_hosts={{ '127.0.0.1,::1,' + (groups['servers'] | map('extract', hostvars, 'ansible_host') | list | default([])) | join(',') }}"
   notify:
     - Restart NRPE service
   when: install_required or add_allowed_hosts
@@ -136,6 +157,36 @@
       {% endfor %}
     backup: yes
   when: add_nrpe_commands
+
+- name: Change owner and permissions of /usr/local/nagios/libexec directory and files inside
+  file:
+    path: /usr/local/nagios
+    owner: nagios
+    group: nagcmd
+    mode: "2775"
+    recurse: yes
+
+- name: Ensure group nagcmd exists
+  group:
+    name: nagcmd
+    state: present
+
+- name: Add nagios and nrpe users to nagcmd group
+  user:
+    name: "{{ item }}"
+    groups: nagcmd
+    append: yes
+  loop:
+    - nagios
+    - nrpe
+
+- name: Change owner and permissions of /etc/nagios directory and files inside
+  file:
+    path: /etc/nagios
+    owner: nrpe
+    group: nrpe
+    mode: "774"
+    recurse: yes
 
 
 - name: Enable and start NRPE service
