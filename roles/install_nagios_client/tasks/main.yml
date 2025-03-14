@@ -1,3 +1,18 @@
+- name: Ensure group nagcmd exists
+  group:
+    name: nagcmd
+    state: present
+
+
+- name: Add nagios and nrpe users to nagcmd group
+  user:
+    name: "{{ item }}"
+    groups: nagcmd
+    append: yes
+  loop:
+    - nagios
+    - nrpe
+
 - name: Check if nrpe.cfg exists and is not empty
   stat:
     path: /etc/nagios/nrpe.cfg
@@ -44,9 +59,9 @@
   debug:
     msg: >-
       {% if force_install_nrpe_and_plugins %}
-      ✅ force_install_nrpe_and_plugins: {{ force_install_nrpe_and_plugins }} - installation will start
+      ✅ force_install_nrpe_and_plugins: {{ force_install_nrpe_and_plugins }} - installation will ALWAYS start
       {% else %}
-      ❌ force_install_nrpe_and_plugins: {{ force_install_nrpe_and_plugins }} - installation will be SKIPPED
+      ❌ force_install_nrpe_and_plugins: {{ force_install_nrpe_and_plugins }} - installation will be SKIPPED if is NOT REQUIRED
       {% endif %}
   changed_when: false
 
@@ -133,18 +148,11 @@
 
 
 - name: Remove duplicate command definitions from nrpe.cfg using blockinfile
-  blockinfile:
+  lineinfile:
     path: /etc/nagios/nrpe.cfg
-    block: |
-      # The following examples use hardcoded command arguments...
-      # This is by far the most secure method of using NRPE
-
-      command[check_users]=/usr/lib64/nagios/plugins/check_users -w 5 -c 10
-      command[check_load]=/usr/lib64/nagios/plugins/check_load -r -w .15,.10,.05 -c .30,.25,.20
-      command[check_hda1]=/usr/lib64/nagios/plugins/check_disk -w 20% -c 10% -p /dev/hda1
-      command[check_zombie_procs]=/usr/lib64/nagios/plugins/check_procs -w 5 -c 10 -s Z
-      command[check_total_procs]=/usr/lib64/nagios/plugins/check_procs -w 150 -c 200
+    regexp: '^command\[check_.*\]='  # Delete duplicate lines, which begins from 'command[check_'
     state: absent
+  when: nrpe_cfg_check.stat.exists
 
 
 - name: Add custom NRPE commands
@@ -158,21 +166,6 @@
     backup: yes
   when: add_nrpe_commands
 
-
-- name: Ensure group nagcmd exists
-  group:
-    name: nagcmd
-    state: present
-
-
-- name: Add nagios and nrpe users to nagcmd group
-  user:
-    name: "{{ item }}"
-    groups: nagcmd
-    append: yes
-  loop:
-    - nagios
-    - nrpe
 
 
 - name: Change owner and permissions of /usr/local/nagios/libexec directory and files inside
@@ -192,6 +185,13 @@
     mode: "2775"
     recurse: yes
 
+- name: Check if the file check_nrpe exists in "{{ default_nrpe_directory }}/check_nrpe"
+  stat:
+    path: "{{ default_nrpe_directory }}/check_nrpe"
+  register: check_nrpe_exist_in_default_dir
+  failed_when: false 
+
+
 - name: Move check_nrpe plugin to plugins_directory
   copy:
     src: "{{ default_nrpe_directory }}/check_nrpe"
@@ -200,15 +200,13 @@
     group: nagcmd
     mode: '2755'
     remote_src: yes
-  when: install_required or force_install_nrpe_and_plugins
+  when: (install_required or force_install_nrpe_and_plugins) and check_nrpe_exist_in_default_dir.stat.exists
 
 - name: Remove source check_nrpe file after copying
   file:
     path: "{{ default_nrpe_directory }}/check_nrpe"
     state: absent
-  notify:
-    - Restart NRPE service
-    - Restart system daemon
+
 
 - name: Enable and start NRPE service
   systemd:
@@ -230,7 +228,12 @@
   command: firewall-cmd --reload
   when: install_required
 
-
+- name: Restart NRPE service and system daemon
+  command: echo "Restarting NRPE service and system daemon"
+  changed_when: false
+  notify:
+    - Restart NRPE service
+    - Restart system daemon
 
 - name: Verify check_load command output
   command: "{{ plugins_directory }}/check_load -w 5,4,3 -c 10,8,6"
