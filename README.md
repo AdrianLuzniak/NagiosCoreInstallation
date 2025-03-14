@@ -442,11 +442,21 @@ date
 If the date or time is incorrect, correct it. You can do this manually or using **NTP (Network Time Protocol)**. To synchronize the time with an NTP server, use the following command (**it usually fixes the problem**):
 ```bash
 sudo timedatectl set-ntp true
+sudo shutdown -r
 ```
 ##### 2. Update Repositories
 Try updating the repositories:
+```bash
+sudo dnf upgrade --refresh -y
+```
 
-##### 3. Check SSL Certificate
+##### 3. Install missing CA certificates
+```bash
+sudo dnf reinstall -y ca-certificates
+sudo update-ca-trust
+```
+
+##### 4. Check SSL Certificate
 Try to manually connect to the repository using curl and check if the problem persists:
 ```bash
 curl -v https://mirrors.centos.org/metalink?repo=centos-baseos-9-stream&arch=x86_64&protocol=https,http
