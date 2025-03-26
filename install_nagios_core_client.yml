@@ -1,6 +1,16 @@
-- name: Setup Nagios Monitoring Server
-  hosts: AnsibleTarget2
+- name: Setup Nagios Monitoring Client
+  hosts: clients
   become: true
   roles:
-    - install_nagios_dependencies
+    #- install_nagios_dependencies
     - install_nagios_client
+  vars:
+    nrpe_commands: "{{ nrpe_commands | map(attribute='name') | list }}"  # Zmienna dla całego playbooka
+
+
+- name: Setup Nagios Monitoring Clients on Server
+  hosts: servers
+  become: true
+  roles:
+    - add_nagios_clients_to_server
+ 

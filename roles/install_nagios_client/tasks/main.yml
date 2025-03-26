@@ -257,3 +257,8 @@
 - name: Debug NRPE check_load output
   debug:
     msg: "{{ check_load_NRPE_result.stdout }}"
+
+
+- name: Extract NRPE command names for Nagios Server
+  set_fact:
+    nrpe_commands: "{{ nrpe_commands | map(attribute='name') | list }}"
