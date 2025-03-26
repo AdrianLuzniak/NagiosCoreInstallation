@@ -152,7 +152,7 @@
     path: /etc/nagios/nrpe.cfg
     regexp: '^command\[check_.*\]='  # Delete duplicate lines, which begins from 'command[check_'
     state: absent
-  when: nrpe_cfg_check.stat.exists
+
 
 
 - name: Add custom NRPE commands
@@ -228,12 +228,14 @@
   command: firewall-cmd --reload
   when: install_required
 
-- name: Restart NRPE service and system daemon
-  command: echo "Restarting NRPE service and system daemon"
-  changed_when: false
-  notify:
-    - Restart NRPE service
-    - Restart system daemon
+- name: Kill all NRPE processes
+  command: pkill -9 nrpe
+  ignore_errors: yes
+
+- name: Restart NRPE service
+  systemd:
+    name: nrpe
+    state: restarted
 
 - name: Verify check_load command output
   command: "{{ plugins_directory }}/check_load -w 5,4,3 -c 10,8,6"
