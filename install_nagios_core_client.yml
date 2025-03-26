@@ -14,16 +14,24 @@
   tasks:
     - name: Retrieve nrpe_commands from a client host
       set_fact:
-        nrpe_commands: "{{ hostvars[groups['clients'][0]].nrpe_commands }}"
+        nrpe_commands: "{{ hostvars[item].nrpe_commands }}"
       # groups['clients'][0] pobiera pierwszy host z grupy clients (możesz dostosować do swoich potrzeb)
+      loop: "{{ groups['clients'] }}"
 
-    - name: Generate Nagios client config
-      debug:
-        msg: "NRPE commands: {{ nrpe_commands }}"
+    # - name: Generate Nagios client config
+    #   debug:
+    #     msg: "NRPE commands: {{ nrpe_commands }}"
 
-- name: Display hostvars for all hosts
-  hosts: clients
-  tasks:
-    - name: Show hostvars structure
-      debug:
-        var: hostvars
+    
+# - name: Display hostvars for all hosts
+#   hosts: clients
+#   tasks:
+#     - name: Show hostvars structure
+#       debug:
+#         var: hostvars
+
+
+- name: Add client to Nagios Server
+  hosts: servers
+  roles:
+    - add_nagios_clients_to_server
