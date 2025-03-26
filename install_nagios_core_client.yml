@@ -2,15 +2,28 @@
   hosts: clients
   become: true
   roles:
-    #- install_nagios_dependencies
     - install_nagios_client
-  vars:
-    nrpe_commands: "{{ nrpe_commands | map(attribute='name') | list }}"  # Zmienna dla całego playbooka
+  tasks:
+    - name: Extract NRPE command names for Nagios Client
+      set_fact:
+        nrpe_commands: "{{ nrpe_commands }}"
 
-
-- name: Setup Nagios Monitoring Clients on Server
+- name: Ensure nrpe_commands is available from clients
   hosts: servers
   become: true
-  roles:
-    - add_nagios_clients_to_server
- 
+  tasks:
+    - name: Retrieve nrpe_commands from a client host
+      set_fact:
+        nrpe_commands: "{{ hostvars[groups['clients'][0]].nrpe_commands }}"
+      # groups['clients'][0] pobiera pierwszy host z grupy clients (możesz dostosować do swoich potrzeb)
+
+    - name: Generate Nagios client config
+      debug:
+        msg: "NRPE commands: {{ nrpe_commands }}"
+
+- name: Display hostvars for all hosts
+  hosts: clients
+  tasks:
+    - name: Show hostvars structure
+      debug:
+        var: hostvars
