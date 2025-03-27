@@ -11,6 +11,15 @@ define host {
     notification_period   24x7
 }
 
+
+# HOST GROUP DEFINITION
+
+define hostgroup {
+    hostgroup_name          {{ hostgroup_name }}
+    alias                   {{ hostgroup_alias }}
+    members                 {{ client_hostname }}
+}
+
 # Definition of services monitored by NRPE
 
 {% for service in nrpe_commands | map(attribute='name') | list  %}

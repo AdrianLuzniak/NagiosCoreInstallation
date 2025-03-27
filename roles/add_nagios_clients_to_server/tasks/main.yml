@@ -30,4 +30,13 @@
     group: nagcmd
     mode: '2755'
   loop: "{{ groups['clients'] }}"
-  notify: Restart Nagios Server
+
+
+- name: Kill all nagios processes
+  command: pkill -9 nagios
+  ignore_errors: yes
+
+- name: Restart Nagios Server
+  systemd:
+    name: nagios
+    state: restarted
