@@ -3,14 +3,15 @@
   become: true
   roles:
     #- system_setup
-     - install_nagios_dependencies
-     - install_nagios_server
-     - configure_firewall
-     - install_nagios_plugins_dependencies
-     - install_nagios_plugins
-     - restart_nagios_check_service_status
-     - add_nagios_to_selinux_exception
+    # - install_nagios_dependencies
+    # - install_nagios_server
+     - install_nrpe_on_nagios_server
+    # - configure_firewall
+    # - install_nagios_plugins_dependencies
+    # - install_nagios_plugins
+    # - restart_nagios_check_service_status
+    # - add_nagios_to_selinux_exception
     # - remove_nagios_from_selinux_exception
-     - set_server_custom_name_and_config_paths
+    # - set_server_custom_name_and_config_paths
 
 
