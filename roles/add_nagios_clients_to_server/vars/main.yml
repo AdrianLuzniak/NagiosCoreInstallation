@@ -1,3 +1,4 @@
 clients_folder_path: "/usr/local/nagios/etc/clients"
 hostgroup_name: "nagios-clients"
 hostgroup_alias: "Linux Client"
+debug: false

@@ -1,6 +1,7 @@
 - name: Ensure nrpe_commands is available
   debug:
     var: nrpe_commands
+  when: debug
     
 - name: Ensure clients directory exists
   file:

@@ -2,6 +2,7 @@
   hosts: clients
   become: true
   roles:
+    - install_nagios_dependencies
     - install_nagios_client
   tasks:
     - name: Extract NRPE command names for Nagios Client
@@ -17,6 +18,11 @@
         nrpe_commands: "{{ hostvars[item].nrpe_commands }}"
       # groups['clients'][0] pobiera pierwszy host z grupy clients (możesz dostosować do swoich potrzeb)
       loop: "{{ groups['clients'] }}"
+    
+    - name: Add clients to Nagios Server
+      include_role:
+        name: add_nagios_clients_to_server
+
 
     # - name: Generate Nagios client config
     #   debug:
@@ -31,7 +37,7 @@
 #         var: hostvars
 
 
-- name: Add client to Nagios Server
-  hosts: servers
-  roles:
-    - add_nagios_clients_to_server
+# - name: Add client to Nagios Server
+#   hosts: servers
+#   roles:
+#     - add_nagios_clients_to_server
