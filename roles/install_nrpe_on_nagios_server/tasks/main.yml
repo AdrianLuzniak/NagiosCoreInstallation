@@ -24,3 +24,16 @@
     group: nagcmd
     mode: '2755'
     remote_src: yes
+
+- name: Append check_nrpe to commands.cfg
+  blockinfile:
+    path: "{{ commands_cfg_path }}/commands.cfg"
+    insertafter: EOF
+    marker: "#{mark} ANSIBLE MANAGED BLOCK - CHECK_NRPE"
+    block: |
+
+      define command {
+          command_name    check_nrpe
+          command_line    /usr/local/nagios/libexec/check_nrpe -H $HOSTADDRESS$ -c $ARG1$
+      }
+  notify: restart nagios

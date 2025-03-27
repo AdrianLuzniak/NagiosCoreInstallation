@@ -1,2 +1,3 @@
 default_nrpe_directory: "/usr/lib64/nagios/plugins"
 plugins_directory: "/usr/local/nagios/libexec"
+commands_cfg_path: "/usr/local/nagios/etc/objects"
