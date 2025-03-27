@@ -18,6 +18,9 @@
     group: nagcmd
     mode: '2755'
   loop: "{{ groups['clients'] }}"
+  vars:
+    client_ip: "{{ hostvars[item]['ansible_host'] }}"
+    client_hostname: "{{ hostvars[item]['ansible_hostname'] }}"
  
 
 - name: Set owner and group for Nagios client config

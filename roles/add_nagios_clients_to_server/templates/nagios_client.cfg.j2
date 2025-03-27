@@ -1,10 +1,10 @@
 # Definition of the client
 define host {
     use             linux-server
-    host_name       {{ inventory_hostname }}
-    alias           {{ inventory_hostname }}
-    address         {{ ansible_host }}
-    hostgroups      {{ hostgroup_name }}
+    host_name       {{ client_hostname }}
+    alias           {{ client_hostname }}
+    address         {{ client_ip }}
+    #hostgroups      {{ hostgroup_name }}
     max_check_attempts  5
     check_period    24x7
     notification_interval 30
@@ -16,7 +16,7 @@ define host {
 {% for service in nrpe_commands | map(attribute='name') | list  %}
 define service {
     use                     local-service
-    host_name               {{ inventory_hostname }}
+    host_name               {{ client_hostname }}
     service_description     {{ service }}
     check_command           check_nrpe!{{ service }}
 }
