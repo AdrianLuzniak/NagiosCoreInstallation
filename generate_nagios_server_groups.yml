@@ -1,0 +1,7 @@
+- name: Generate groups config for Nagios server
+  hosts: servers
+  become: true
+  roles:
+    - generate_nagios_groups_config
+
+

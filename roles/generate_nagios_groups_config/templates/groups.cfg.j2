@@ -1,0 +1,11 @@
+define hostgroup {
+    hostgroup_name {{ server_hostgroup_name }}
+    alias          {{ server_hostgroup_alias }}
+    members        {{ groups['servers'] | map('extract', hostvars, 'inventory_hostname') | join(',') }}
+}
+
+define hostgroup {
+    hostgroup_name {{ clients_hostgroup_name }}
+    alias          {{ clients_hostgroup_alias }}
+    members        {{ groups['clients'] | map('extract', hostvars, 'inventory_hostname') | join(',') }}
+}

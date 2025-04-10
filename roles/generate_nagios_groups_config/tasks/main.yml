@@ -1,0 +1,12 @@
+- name: Generate groups.cfg file from template
+  template:
+    src: groups.cfg.j2
+    dest: /tmp/groups.cfg
+    mode: '0755'
+
+- name: Deploy groups.cfg to Nagios server
+  copy:
+    src: /tmp/groups.cfg
+    dest: "{{ groups_cfg_path }}"
+    remote_src: yes
+  notify: restart nagios

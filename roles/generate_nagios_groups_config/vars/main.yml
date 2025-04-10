@@ -1,0 +1,6 @@
+server_hostgroup_name: "Servers"
+server_hostgroup_alias: "Server Machines"
+
+clients_hostgroup_name: "Clients"
+clients_hostgroup_alias: "Clients machines"
+groups_cfg_path: "/usr/local/nagios/etc/objects/groups.cfg"
