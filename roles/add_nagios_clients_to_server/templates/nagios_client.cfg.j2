@@ -4,21 +4,12 @@ define host {
     host_name       {{ client_hostname }}
     alias           {{ client_hostname }}
     address         {{ client_ip }}
-    #hostgroups      {{ hostgroup_name }}
     max_check_attempts  5
     check_period    24x7
     notification_interval 30
     notification_period   24x7
 }
 
-
-# HOST GROUP DEFINITION
-
-define hostgroup {
-    hostgroup_name          {{ hostgroup_name }}
-    alias                   {{ hostgroup_alias }}
-    members                 {{ client_hostname }}
-}
 
 # Definition of services monitored by NRPE
 

@@ -1,8 +1,6 @@
 set_custom_paths: true
 nagios_hostname: "Nagios_Server"
 nagios_server_alias: "Nagios_Server"
-hostgroup_name: "linux-servers" #no spaces allowed
-hostgroup_alias: "Linux Server"
 nagios_host_address: "127.0.0.1"
 
 
