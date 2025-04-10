@@ -7,7 +7,6 @@
     - install_nagios_server
     - install_nrpe_on_nagios_server
     - configure_firewall
-    - install_nagios_plugins_dependencies
     - install_nagios_plugins
     - restart_nagios_check_service_status
     - add_nagios_to_selinux_exception
