@@ -1,3 +1,5 @@
 force_install_nagios: false
+nagios_installation_path: "/usr/local/nagios/bin/nagios" #only checks if nagios is installed in following directory
+nagios_version: "4.5.9"      #old version 4.4.12
 nagios_admin_username: "nagiosadmin"
 nagios_admin_password: "password"

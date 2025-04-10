@@ -1,6 +1,6 @@
 - name: Check if Nagios Core Server is installed
   stat:
-    path: "/usr/local/nagios/bin/nagios"
+    path: "{{ nagios_installation_path }}"
   register: nagios_server_installed
 
 
@@ -43,7 +43,7 @@
 
 - name: Download Nagios Core Source
   get_url:
-    url: https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.12.tar.gz
+    url: https://assets.nagios.com/downloads/nagioscore/releases/nagios-{{ nagios_version }}.tar.gz
     dest: /tmp/nagios.tar.gz
   when: not nagios_server_installed.stat.exists or force_install_nagios
 
@@ -58,7 +58,7 @@
 
 - name: Compile and install Nagios Core
   shell: |
-    cd /tmp/nagios-4.4.12
+    cd /tmp/nagios-{{ nagios_version }}
     ./configure --with-command-group=nagcmd
     make all
     make install
